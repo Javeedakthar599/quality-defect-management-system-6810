@@ -1,48 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import "./App.css";
 
-// PUBLIC_INTERFACE
+import DashboardPage from "./pages/DashboardPage";
+import DefectsListPage from "./pages/DefectsListPage";
+import DefectCreatePage from "./pages/DefectCreatePage";
+import DefectDetailPage from "./pages/DefectDetailPage";
+import ActionsPage from "./pages/ActionsPage";
+import RcaPage from "./pages/RcaPage";
+import NotFoundPage from "./pages/NotFoundPage";
+
+/**
+ * PUBLIC_INTERFACE
+ * Application entry component for the Quality Defect Management System.
+ */
 function App() {
-  const [theme, setTheme] = useState('light');
-
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/defects" element={<DefectsListPage />} />
+        <Route path="/defects/new" element={<DefectCreatePage />} />
+        <Route path="/defects/:defectId" element={<DefectDetailPage />} />
+        <Route path="/actions" element={<ActionsPage />} />
+        <Route path="/rca" element={<RcaPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
