@@ -13,7 +13,13 @@ const DEFAULT_TIMEOUT_MS = 15000;
  * Falls back to same-origin if REACT_APP_API_BASE_URL is unset.
  */
 export function getApiBaseUrl() {
-  return (process.env.REACT_APP_API_BASE_URL || "").replace(/\/$/, "");
+  // Prefer the documented variable name, but accept older ones to avoid breaking existing env files.
+  const base =
+    process.env.REACT_APP_API_BASE_URL ||
+    process.env.REACT_APP_API_BASE ||
+    process.env.REACT_APP_BACKEND_URL ||
+    "";
+  return String(base).replace(/\/$/, "");
 }
 
 function buildUrl(path) {
