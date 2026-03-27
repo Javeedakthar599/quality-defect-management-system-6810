@@ -10,6 +10,12 @@ import { validateDefect } from "../utils/validators";
  */
 export default function DefectCreatePage() {
   const nav = useNavigate();
+
+  // Defensive: keep option arrays local and always defined so we never `.map` on undefined.
+  // This prevents the "Cannot read properties of undefined (reading 'map')" crash seen in the screenshot.
+  const SEVERITY_OPTIONS = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
+  const PRIORITY_OPTIONS = ["P1", "P2", "P3", "P4"];
+
   const [values, setValues] = useState({
     defect_id: "",
     title: "",
@@ -130,10 +136,11 @@ export default function DefectCreatePage() {
               value={values.severity}
               onChange={(e) => setValues((v) => ({ ...v, severity: e.target.value }))}
             >
-              <option value="CRITICAL">Critical</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
+              {(SEVERITY_OPTIONS || []).map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt.charAt(0) + opt.slice(1).toLowerCase()}
+                </option>
+              ))}
             </select>
             {errors.severity ? <div className="errorText">{errors.severity}</div> : null}
           </div>
@@ -146,10 +153,11 @@ export default function DefectCreatePage() {
               value={values.priority}
               onChange={(e) => setValues((v) => ({ ...v, priority: e.target.value }))}
             >
-              <option value="P1">P1</option>
-              <option value="P2">P2</option>
-              <option value="P3">P3</option>
-              <option value="P4">P4</option>
+              {(PRIORITY_OPTIONS || []).map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
             </select>
             {errors.priority ? <div className="errorText">{errors.priority}</div> : null}
           </div>

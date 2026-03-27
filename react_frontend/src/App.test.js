@@ -3,6 +3,7 @@ import App from "./App";
 
 test("renders dashboard", () => {
   render(<App />);
-  const title = screen.getByText(/Dashboard/i);
-  expect(title).toBeInTheDocument();
+  // Sidebar also contains "Dashboard" nav item; assert the main page heading instead.
+  const heading = screen.getByRole("heading", { name: /dashboard/i, level: 1 });
+  expect(heading).toBeInTheDocument();
 });
