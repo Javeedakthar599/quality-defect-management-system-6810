@@ -11,17 +11,49 @@ import { validateDefect } from "../utils/validators";
 export default function DefectCreatePage() {
   const nav = useNavigate();
   const [values, setValues] = useState({
+    defect_id: "",
     title: "",
     description: "",
-    severity: "medium",
-    priority: "p2",
-    status: "open",
-    detected_at: new Date().toISOString().slice(0, 10),
+    // Backend enums are uppercase (see openapi + Django model choices)
+    severity: "MEDIUM",
+    priority: "P2",
+    status: "NEW",
+    detected_on: new Date().toISOString().slice(0, 10),
     owner: ""
   });
   const [errors, setErrors] = useState({});
   const [submitErr, setSubmitErr] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /**
+   * Convert DRF-style error payloads into a flat {field: "msg"} map.
+   * Examples:
+   *  - {"defect_id":["This field is required."]}
+   *  - {"non_field_errors":["..."]}
+   */
+  function applyApiErrors(err) {
+    const payload = err?.payload;
+    if (!payload || typeof payload !== "object") return false;
+
+    const nextErrors = {};
+    Object.entries(payload).forEach(([k, v]) => {
+      if (!v) return;
+      const msg = Array.isArray(v) ? v.join(", ") : String(v);
+      nextErrors[k] = msg;
+    });
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors((prev) => ({ ...prev, ...nextErrors }));
+      // Prefer non-field errors in the banner; otherwise show nothing here
+      const banner =
+        nextErrors.non_field_errors ||
+        nextErrors.detail ||
+        "";
+      setSubmitErr(banner);
+      return true;
+    }
+    return false;
+  }
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -38,7 +70,8 @@ export default function DefectCreatePage() {
       if (id) nav(`/defects/${id}`);
       else nav("/defects");
     } catch (err) {
-      setSubmitErr(err?.message || "Failed to create defect.");
+      const handled = applyApiErrors(err);
+      if (!handled) setSubmitErr(err?.message || "Failed to create defect.");
     } finally {
       setIsSubmitting(false);
     }
@@ -53,6 +86,18 @@ export default function DefectCreatePage() {
 
       <form className="card" onSubmit={onSubmit}>
         <div className="fieldRow">
+          <div className="field">
+            <label className="label" htmlFor="defect_id">Defect ID</label>
+            <input
+              id="defect_id"
+              className="input"
+              value={values.defect_id}
+              onChange={(e) => setValues((v) => ({ ...v, defect_id: e.target.value }))}
+              placeholder="e.g., DF-1001"
+            />
+            {errors.defect_id ? <div className="errorText">{errors.defect_id}</div> : <div className="help">Required. Human-friendly identifier.</div>}
+          </div>
+
           <div className="field fieldFull">
             <label className="label" htmlFor="title">Title</label>
             <input
@@ -85,10 +130,10 @@ export default function DefectCreatePage() {
               value={values.severity}
               onChange={(e) => setValues((v) => ({ ...v, severity: e.target.value }))}
             >
-              <option value="critical">Critical</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
             </select>
             {errors.severity ? <div className="errorText">{errors.severity}</div> : null}
           </div>
@@ -101,24 +146,24 @@ export default function DefectCreatePage() {
               value={values.priority}
               onChange={(e) => setValues((v) => ({ ...v, priority: e.target.value }))}
             >
-              <option value="p0">P0</option>
-              <option value="p1">P1</option>
-              <option value="p2">P2</option>
-              <option value="p3">P3</option>
+              <option value="P1">P1</option>
+              <option value="P2">P2</option>
+              <option value="P3">P3</option>
+              <option value="P4">P4</option>
             </select>
             {errors.priority ? <div className="errorText">{errors.priority}</div> : null}
           </div>
 
           <div className="field">
-            <label className="label" htmlFor="detected_at">Detected date</label>
+            <label className="label" htmlFor="detected_on">Detected date</label>
             <input
-              id="detected_at"
+              id="detected_on"
               className="input"
               type="date"
-              value={values.detected_at}
-              onChange={(e) => setValues((v) => ({ ...v, detected_at: e.target.value }))}
+              value={values.detected_on}
+              onChange={(e) => setValues((v) => ({ ...v, detected_on: e.target.value }))}
             />
-            {errors.detected_at ? <div className="errorText">{errors.detected_at}</div> : null}
+            {errors.detected_on ? <div className="errorText">{errors.detected_on}</div> : null}
           </div>
 
           <div className="field">
@@ -130,7 +175,7 @@ export default function DefectCreatePage() {
               onChange={(e) => setValues((v) => ({ ...v, owner: e.target.value }))}
               placeholder="Who reported or owns triage"
             />
-            <div className="help">Optional if backend assigns automatically.</div>
+            <div className="help">Optional.</div>
           </div>
         </div>
 

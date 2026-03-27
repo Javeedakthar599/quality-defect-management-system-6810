@@ -9,15 +9,17 @@
  */
 export function validateDefect(values) {
   const errors = {};
+  const defectId = (values.defect_id || "").trim();
   const title = (values.title || "").trim();
   const description = (values.description || "").trim();
 
+  if (!defectId) errors.defect_id = "Defect ID is required.";
   if (!title) errors.title = "Title is required.";
   if (title.length > 120) errors.title = "Title must be <= 120 characters.";
   if (!description) errors.description = "Description is required.";
   if (!values.severity) errors.severity = "Severity is required.";
   if (!values.priority) errors.priority = "Priority is required.";
-  if (!values.detected_at) errors.detected_at = "Detected date is required.";
+  if (!values.detected_on) errors.detected_on = "Detected date is required.";
 
   return { valid: Object.keys(errors).length === 0, errors };
 }
